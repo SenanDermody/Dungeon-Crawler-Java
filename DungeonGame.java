@@ -10,15 +10,22 @@ public class DungeonGame
 
         //intro message
         System.out.println("Welcome to the Dungeon Game!");
-        System.out.println("The obejctive is to make it through the dungeon without walking into a trap");
+        System.out.println("The obejctive is to make it to the end (E) of the dungeon without walking into a trap (X)");
+        System.out.println("You may find powerups that will help you thoughout your journey (P)");
+        System.out.println("Sometimes when you walk past a trap, it may make a noise...");
         System.out.println("To start choose a diffculty: ");
-        System.out.println("Hard (30 traps)");
-        System.out.println("Medium (15 traps)");
-        System.out.println("Easy (5 traps)");
-        System.out.println("Peaceful (1 traps)");
+        System.out.println("Hard     (30 traps) (5 shields)");
+        System.out.println("Medium   (15 traps) (3 shields)");
+        System.out.println("Easy     (5 traps)  (1 shield)");
+        System.out.println("Peaceful (1 traps)  (No shields)");
+        System.out.println("");
 
         //set difficulty / number of traps
         int difficult = 1;
+        int powerUps = 0;
+        int powerUpCount = 0;
+        int moves = 0;
+        int shieldCount = 0;
 
         while(difficult != 0 && difficult != 5 && difficult != 15 && difficult != 30)
         {
@@ -28,14 +35,17 @@ public class DungeonGame
             if(difficulty.toLowerCase().equals("hard"))
             {
                 difficult = 30;
+                powerUps = 5;
             }
             else if(difficulty.toLowerCase().equals("medium"))
             {
                 difficult = 15;
+                powerUps = 3;
             }
             else if(difficulty.toLowerCase().equals("easy"))
             {
                 difficult = 5;
+                powerUps = 1;
             }
             else if(difficulty.toLowerCase().equals("peaceful"))
             {
@@ -76,7 +86,7 @@ public class DungeonGame
         int nearTraps = 0;
 
         //fill grid with number of traps
-        while(trapCount <= difficult)
+        while(trapCount < difficult)
         {
             int randomRow = r.nextInt(10);
             int randomCol = r.nextInt(10);
@@ -85,6 +95,19 @@ public class DungeonGame
             {
                 traps[randomRow][randomCol] = 'X';
                 trapCount++;
+            }
+        }
+
+        //fill grid with powerups
+        while(powerUpCount < powerUps)
+        {
+            int randomRow2 = r.nextInt(10);
+            int randomCol2 = r.nextInt(10);
+
+            if(traps[randomRow2][randomCol2] == '.' && !(randomRow2 < 2 && randomCol2 < 3))
+            {
+                traps[randomRow2][randomCol2] = 'P';
+                powerUpCount++;
             }
         }
 
@@ -99,10 +122,12 @@ public class DungeonGame
         tiles[randomEndRow][randomEndCol] = 'E';
         traps[randomEndRow][randomEndCol] = 'E';
 
-        printGrid(tiles);
+        printGrid(tiles, moves,shieldCount);
 
+        System.out.println("");
         System.out.println("You have started at position (0,0)");
         System.out.println("To move use WASD");
+        System.out.println("");
 
         //update user position and check for traps / ending
         while(tiles[currentRow][currentCol] != 'E')
@@ -120,38 +145,72 @@ public class DungeonGame
                     {
                         System.out.println("You made it to the end!");
                         System.out.println("You carefully missed traps " + nearTraps + " times!");
-                        printGrid(traps);
+                        System.out.println("");
+                        moves++;
+                        printGrid(traps, moves,shieldCount);
                         break;
                     }
 
-                    else if(trapCheck(tiles, traps, currentRow, currentCol) == true)
+                    else if(trapCheck(traps, currentRow, currentCol) == true)
                     {
-                        System.out.println("You hit a trap, game over!");
+                        if(shieldCount > 0)
+                        {
+                            shieldCount--;
+                            System.out.println("Your shield absorbed a trap hit for you, that was a close one!");
+                            System.out.println("");
+                            tiles[currentRow][currentCol] = '@';
+                            traps[currentRow + 1][currentCol] = '-';
+                            tiles[currentRow + 1][currentCol] = '.';
+                            moves++;
+                            printGrid(tiles, moves, shieldCount);
+                        }
+                        else
+                        {
+                            System.out.println("You hit a trap, game over!");
+                            System.out.println("");
+                            traps[currentRow + 1][currentCol] = '-';
+                            traps[currentRow][currentCol] = '@';
+                            moves++;
+                            printGrid(traps, moves,shieldCount);
+                            break;
+                        }
+                    }
+
+                    else if(powerUpCheck(traps, currentRow, currentCol) == true)
+                    {
+                        System.out.println("You found a power up!");
+                        System.out.println("You can now absorb a trap hit");
+                        System.out.println("");
+                        moves++;
+                        shieldCount++;
+                        tiles[currentRow][currentCol] = '@';
                         traps[currentRow + 1][currentCol] = '-';
-                        traps[currentRow][currentCol] = '@';
-                        printGrid(traps);
-                        break;
+                        tiles[currentRow + 1][currentCol] = '.';
+                        printGrid(tiles, moves, shieldCount);
                     }
    
                     else
                     {
                         if(nearbyCheck(traps, currentRow, currentCol) == true)
                         {
-                            System.out.println("You hear something clicking near you, be carefull...");
+                            System.out.println("You hear something clicking near you, be careful...");
+                            System.out.println("");
                             nearTraps++;
                         }
 
                         tiles[currentRow][currentCol] = '@';
                         tiles[currentRow + 1][currentCol] = '.';
                         traps[currentRow + 1][currentCol] = '-';
+                        moves++;
                     }
                 }
                 else
                 {
                     System.out.println("You hit a wall!");
+                    System.out.println("");
                 }
 
-                printGrid(tiles);
+                printGrid(tiles, moves,shieldCount);
             }
 
             //if user enters an a
@@ -165,38 +224,73 @@ public class DungeonGame
                     {
                         System.out.println("You made it to the end!");
                         System.out.println("You carefully missed traps " + nearTraps + " times!");
-                        printGrid(traps);
+                        System.out.println("");
+                        moves++;
+                        printGrid(traps, moves,shieldCount);
                         break;
                     }
 
-                    else if(trapCheck(tiles, traps, currentRow, currentCol) == true)
+                    else if(trapCheck(traps, currentRow, currentCol) == true)
                     {
-                        System.out.println("You hit a trap, game over!");
+                        if(shieldCount > 0)
+                        {
+                            shieldCount--;
+                            System.out.println("Your shield absorbed a trap hit for you, that was a close one!");
+                            System.out.println("");
+                            tiles[currentRow][currentCol] = '@';
+                            traps[currentRow][currentCol + 1] = '-';
+                            tiles[currentRow][currentCol + 1] = '.';
+                            moves++;
+                            printGrid(tiles, moves, shieldCount);
+                        }
+                        else
+                        {
+                            System.out.println("You hit a trap, game over!");
+                            System.out.println("");
+                            traps[currentRow][currentCol + 1] = '-';
+                            traps[currentRow][currentCol] = '@';
+                            moves++;
+                            printGrid(traps, moves,shieldCount);
+                            break;
+                        }
+                        
+                    }
+
+                    else if(powerUpCheck(traps, currentRow, currentCol) == true)
+                    {
+                        System.out.println("You found a power up!");
+                        System.out.println("You can now absorb a trap hit");
+                        System.out.println("");
+                        shieldCount++;
+                        moves++;
+                        tiles[currentRow][currentCol] = '@';
                         traps[currentRow][currentCol + 1] = '-';
-                        traps[currentRow][currentCol] = '@';
-                        printGrid(traps);
-                        break;
+                        tiles[currentRow][currentCol + 1] = '.';
+                        printGrid(tiles, moves, shieldCount);
                     }
 
                     else
                     {
                         if(nearbyCheck(traps, currentRow, currentCol) == true)
                         {
-                            System.out.println("You hear something clicking near you, be carefull...");
+                            System.out.println("You hear something clicking near you, be careful...");
+                            System.out.println("");
                             nearTraps++;
                         }
 
                         tiles[currentRow][currentCol] = '@';
                         tiles[currentRow][currentCol + 1] = '.';
                         traps[currentRow][currentCol + 1] = '-';
+                        moves++;
                     }
                 }
                 else
                 {
                     System.out.println("You hit a wall!");
+                    System.out.println("");
                 }
 
-                printGrid(tiles);
+                printGrid(tiles, moves,shieldCount);
             }
 
             //if user enters an s
@@ -210,38 +304,73 @@ public class DungeonGame
                     {
                         System.out.println("You made it to the end!");
                         System.out.println("You carefully missed traps " + nearTraps + " times!");
-                        printGrid(traps);
+                        System.out.println("");
+                        moves++;
+                        printGrid(traps, moves,shieldCount);
                         break;
                     }
 
-                    else if(trapCheck(tiles, traps, currentRow, currentCol) == true)
+                    else if(trapCheck(traps, currentRow, currentCol) == true)
                     {
-                        System.out.println("You hit a trap, game over!");
+                        if(shieldCount > 0)
+                        {
+                            shieldCount--;
+                            moves++;
+                            System.out.println("Your shield absorbed a trap hit for you, that was a close one!");
+                            System.out.println("");
+                            tiles[currentRow][currentCol] = '@';
+                            traps[currentRow - 1][currentCol] = '-';
+                            tiles[currentRow - 1][currentCol] = '.';
+                            printGrid(tiles, moves, shieldCount);
+                        }
+                        else
+                        {
+                            System.out.println("You hit a trap, game over!");
+                            System.out.println("");
+                            traps[currentRow - 1][currentCol] = '-';
+                            traps[currentRow][currentCol] = '@';
+                            moves++;
+                            printGrid(traps, moves, shieldCount);
+                            break;
+                        }
+                        
+                    }
+
+                    else if(powerUpCheck(traps, currentRow, currentCol) == true)
+                    {
+                        System.out.println("You found a power up!");
+                        System.out.println("You can now absorb a trap hit");
+                        System.out.println("");
+                        shieldCount++;
+                        moves++;
+                        tiles[currentRow][currentCol] = '@';
                         traps[currentRow - 1][currentCol] = '-';
-                        traps[currentRow][currentCol] = '@';
-                        printGrid(traps);
-                        break;
+                        tiles[currentRow - 1][currentCol] = '.';
+                        printGrid(tiles, moves, shieldCount);
                     }
 
                     else
                     {
                         if(nearbyCheck(traps, currentRow, currentCol) == true)
                         {
-                            System.out.println("You hear something clicking near you, be carefull...");
+                            System.out.println("You hear something clicking near you, be careful...");
+                            System.out.println("");
                             nearTraps++;
                         }
 
                         tiles[currentRow][currentCol] = '@';
                         tiles[currentRow - 1][currentCol] = '.';
                         traps[currentRow - 1][currentCol] = '-';
+                        moves++;
                     }
                 }
                 else
                 {
                     System.out.println("You hit a wall!");
+                    System.out.println("");
                 }
 
-                printGrid(tiles);
+                printGrid(tiles, moves,shieldCount);
             }
 
             // if user enters a d
@@ -255,17 +384,49 @@ public class DungeonGame
                     {
                         System.out.println("You made it to the end!");
                         System.out.println("You carefully missed " + nearTraps + " traps!");
-                        printGrid(traps);
+                        System.out.println("");
+                        moves++;
+                        printGrid(traps, moves, shieldCount);
                         break;
                     }
 
-                    else if(trapCheck(tiles, traps, currentRow, currentCol) == true) //check if on a trap
+                    else if(trapCheck(traps, currentRow, currentCol) == true) //check if on a trap
                     {
-                        System.out.println("You hit a trap, game over!");
+                        if(shieldCount > 0)
+                        {
+                            shieldCount--;
+                            moves++;
+                            System.out.println("Your shield absorbed a trap hit for you, that was a close one!");
+                            System.out.println("");
+                            tiles[currentRow][currentCol] = '@';
+                            traps[currentRow][currentCol - 1] = '-';
+                            tiles[currentRow][currentCol - 1] = '.';
+                            printGrid(tiles, moves, shieldCount);
+                        }
+                        else
+                        {
+                           System.out.println("You hit a trap, game over!");
+                           System.out.println("");
+                            traps[currentRow][currentCol - 1] = '-';
+                            traps[currentRow][currentCol] = '@';
+                            moves++;
+                            printGrid(traps, moves,shieldCount);
+                            moves++;
+                            break; 
+                        }
+                        
+                    }
+                    else if(powerUpCheck(traps, currentRow, currentCol) == true)
+                    {
+                        System.out.println("You found a power up!");
+                        System.out.println("You can now absorb a trap hit");
+                        System.out.println("");
+                        shieldCount++;
+                        moves++;
+                        tiles[currentRow][currentCol] = '@';
                         traps[currentRow][currentCol - 1] = '-';
-                        traps[currentRow][currentCol] = '@';
-                        printGrid(traps);
-                        break;
+                        tiles[currentRow][currentCol - 1] = '.';
+                        printGrid(tiles, moves, shieldCount);
                     }
 
                     else //update user position
@@ -273,33 +434,42 @@ public class DungeonGame
 
                         if(nearbyCheck(traps, currentRow, currentCol) == true) //check for nearby traps
                         {
-                            System.out.println("You hear something clicking near you, be carefull...");
+                            System.out.println("You hear something clicking near you, be careful...");
+                            System.out.println("");
                             nearTraps++;
                         }
 
                         tiles[currentRow][currentCol] = '@';
                         tiles[currentRow][currentCol - 1] = '.';
                         traps[currentRow][currentCol - 1] = '-';
+                        moves++;
                     }
                 }
                 else //print message if user attempts to go out of bounds
                 {
                     System.out.println("You hit a wall!");
+                    System.out.println("");
                 }
 
                 //print the grid
-                printGrid(tiles);
+                printGrid(tiles, moves, shieldCount);
             }
             else //handle if user enters an invalid option
             {
                 System.out.println("Not a valid move, use WASD");
+                System.out.println("");
             }
         }
     }
 
-    public static boolean trapCheck(char tiles[][], char traps[][],int r, int c)
+    public static boolean trapCheck(char traps[][],int r, int c)
     {
         return traps[r][c] == 'X';
+    }
+
+    public static boolean powerUpCheck(char traps[][], int r, int c)
+    {
+        return traps[r][c] == 'P';
     }
 
     public static boolean endCheck(char tiles[][], int r, int c)
@@ -313,7 +483,7 @@ public class DungeonGame
         
     }
 
-    public static void printGrid(char tiles[][])
+    public static void printGrid(char tiles[][],int moves, int shieldCount)
     {
         System.out.println("");
         System.out.println("    1 2 3 4 5 6 7 8 9 10");
@@ -337,6 +507,8 @@ public class DungeonGame
             System.out.println();
         }
 
+        System.out.println("");
+        System.out.println("Moves [" + moves + "] | Shields [" + shieldCount + "]");
         System.out.println("");
     }
 
