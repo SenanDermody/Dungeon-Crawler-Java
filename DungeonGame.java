@@ -10,42 +10,64 @@ public class DungeonGame
 
         //intro message
         System.out.println("Welcome to the Dungeon Game!");
-        System.out.println("The obejctive is to make it to the end (E) of the dungeon without walking into a trap (X)");
+        System.out.println("The objective is to make it to the end (E) of the dungeon without walking into a trap (X)");
         System.out.println("You may find powerups that will help you thoughout your journey (P)");
         System.out.println("Sometimes when you walk past a trap, it may make a noise...");
-        System.out.println("To start choose a diffculty: ");
-        System.out.println("Hard     (30 traps) (5 shields)");
-        System.out.println("Medium   (15 traps) (3 shields)");
-        System.out.println("Easy     (5 traps)  (1 shield)");
-        System.out.println("Peaceful (1 traps)  (No shields)");
-        System.out.println("");
+        System.out.println("To start, choose a size for your grid: ");
+        System.out.println("Min area = 5 & max area = 15");
 
-        //set difficulty / number of traps
-        int difficult = 1;
-        int powerUps = 0;
+        int gridSize = scanner.nextInt();
+        scanner.nextLine();
+
+        //set variables
+        while (gridSize < 6 && gridSize > 16)
+        {
+            if(gridSize < 6)
+            {
+                System.out.println("Choose a bigger area");
+                gridSize = scanner.nextInt();
+            }
+            if(gridSize > 16)
+            {
+                System.out.println("Choose a smaller area");
+                gridSize = scanner.nextInt();
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        //set variables
+        double difficult = 1;
+        double powerUps = 0;
         int powerUpCount = 0;
         int moves = 0;
         int shieldCount = 0;
 
-        while(difficult != 0 && difficult != 5 && difficult != 15 && difficult != 30)
-        {
-            String difficulty = scanner.nextLine();
+        System.out.println("Now choose a diffuclty to play: ");
+        System.out.println("Hard     (30% traps) (5% shields)");
+        System.out.println("Medium   (15% traps) (3% shields)");
+        System.out.println("Easy     (5% traps)  (1% shield)");
+        System.out.println("Peaceful (1% traps)  (No shields)");
+        System.out.println("");
 
-            //sets difficult level based on input
-            if(difficulty.toLowerCase().equals("hard"))
+        String difficulty = scanner.nextLine();
+
+        if(difficulty.toLowerCase().equals("hard"))
             {
-                difficult = 30;
-                powerUps = 5;
+                difficult = (gridSize * gridSize) * 0.3;
+                powerUps = (gridSize * gridSize) * 0.05;
             }
             else if(difficulty.toLowerCase().equals("medium"))
             {
-                difficult = 15;
-                powerUps = 3;
+                difficult = (gridSize * gridSize) * 0.15;
+                powerUps = (gridSize * gridSize) * 0.03;
             }
             else if(difficulty.toLowerCase().equals("easy"))
             {
-                difficult = 5;
-                powerUps = 1;
+                difficult = (gridSize * gridSize) * 0.05;
+                powerUps = (gridSize * gridSize) * 0.01;
             }
             else if(difficulty.toLowerCase().equals("peaceful"))
             {
@@ -54,12 +76,47 @@ public class DungeonGame
             else
             {
                 System.out.println("Not a valid option, try again");
+                difficulty = scanner.nextLine();
+
+            }
+
+        //set difficulty level
+        while(!difficulty.equals("hard") && !difficulty.equals("medium") && !difficulty.equals("easy") && !difficulty.equals("peaceful"))
+        {
+            //sets difficult level based on input
+            if(difficulty.toLowerCase().equals("hard"))
+            {
+                difficult = (gridSize * gridSize) * 0.3;
+                powerUps = (gridSize * gridSize) * 0.05;
+            }
+            else if(difficulty.toLowerCase().equals("medium"))
+            {
+                difficult = (gridSize * gridSize) * 0.15;
+                powerUps = (gridSize * gridSize) * 0.03;
+            }
+            else if(difficulty.toLowerCase().equals("easy"))
+            {
+                difficult = (gridSize * gridSize) * 0.05;
+                powerUps = (gridSize * gridSize) * 0.01;
+            }
+            else if(difficulty.toLowerCase().equals("peaceful"))
+            {
+                difficult = 0;
+            }
+            else
+            {
+                System.out.println("Not a valid option, try again");
+                difficulty = scanner.nextLine();
+
             }
         }
+
+        System.out.println(difficult);
+        System.out.println(powerUps);
         
         
         //creating grid array and fill it
-        char[][] tiles = new char[10][10];
+        char[][] tiles = new char[gridSize][gridSize];
 
         for(int i = 0; i < tiles.length; i++)
         {
@@ -71,7 +128,7 @@ public class DungeonGame
         }
 
         //creating trap array and filling it
-        char[][] traps = new char[10][10];
+        char[][] traps = new char[gridSize][gridSize];
 
         for(int i = 0; i < traps.length; i++)
         {
@@ -88,8 +145,8 @@ public class DungeonGame
         //fill grid with number of traps
         while(trapCount < difficult)
         {
-            int randomRow = r.nextInt(10);
-            int randomCol = r.nextInt(10);
+            int randomRow = r.nextInt(gridSize);
+            int randomCol = r.nextInt(gridSize);
 
             if(traps[randomRow][randomCol] == '.' && !(randomRow < 3 && randomCol < 3))
             {
@@ -101,8 +158,8 @@ public class DungeonGame
         //fill grid with powerups
         while(powerUpCount < powerUps)
         {
-            int randomRow2 = r.nextInt(10);
-            int randomCol2 = r.nextInt(10);
+            int randomRow2 = r.nextInt(gridSize);
+            int randomCol2 = r.nextInt(gridSize);
 
             if(traps[randomRow2][randomCol2] == '.' && !(randomRow2 < 2 && randomCol2 < 3))
             {
@@ -117,12 +174,12 @@ public class DungeonGame
         tiles[currentRow][currentCol] = '@';
 
         //creating the ending
-        int randomEndRow = r.nextInt(3) + 7;
-        int randomEndCol = r.nextInt(3) + 7;
+        int randomEndRow = r.nextInt(3) + gridSize - 3;
+        int randomEndCol = r.nextInt(3) + gridSize - 3;
         tiles[randomEndRow][randomEndCol] = 'E';
         traps[randomEndRow][randomEndCol] = 'E';
 
-        printGrid(tiles, moves,shieldCount);
+        printGrid(tiles, moves,shieldCount, gridSize);
 
         System.out.println("");
         System.out.println("You have started at position (0,0)");
@@ -147,7 +204,7 @@ public class DungeonGame
                         System.out.println("You carefully missed traps " + nearTraps + " times!");
                         System.out.println("");
                         moves++;
-                        printGrid(traps, moves,shieldCount);
+                        printGrid(traps, moves,shieldCount,gridSize);
                         break;
                     }
 
@@ -162,7 +219,7 @@ public class DungeonGame
                             traps[currentRow + 1][currentCol] = '-';
                             tiles[currentRow + 1][currentCol] = '.';
                             moves++;
-                            printGrid(tiles, moves, shieldCount);
+                            printGrid(tiles, moves, shieldCount,gridSize);
                         }
                         else
                         {
@@ -171,7 +228,7 @@ public class DungeonGame
                             traps[currentRow + 1][currentCol] = '-';
                             traps[currentRow][currentCol] = '@';
                             moves++;
-                            printGrid(traps, moves,shieldCount);
+                            printGrid(traps, moves,shieldCount,gridSize);
                             break;
                         }
                     }
@@ -186,7 +243,7 @@ public class DungeonGame
                         tiles[currentRow][currentCol] = '@';
                         traps[currentRow + 1][currentCol] = '-';
                         tiles[currentRow + 1][currentCol] = '.';
-                        printGrid(tiles, moves, shieldCount);
+                        printGrid(tiles, moves, shieldCount,gridSize);
                     }
    
                     else
@@ -210,7 +267,7 @@ public class DungeonGame
                     System.out.println("");
                 }
 
-                printGrid(tiles, moves,shieldCount);
+                printGrid(tiles, moves,shieldCount,gridSize);
             }
 
             //if user enters an a
@@ -226,7 +283,7 @@ public class DungeonGame
                         System.out.println("You carefully missed traps " + nearTraps + " times!");
                         System.out.println("");
                         moves++;
-                        printGrid(traps, moves,shieldCount);
+                        printGrid(traps, moves,shieldCount,gridSize);
                         break;
                     }
 
@@ -241,7 +298,7 @@ public class DungeonGame
                             traps[currentRow][currentCol + 1] = '-';
                             tiles[currentRow][currentCol + 1] = '.';
                             moves++;
-                            printGrid(tiles, moves, shieldCount);
+                            printGrid(tiles, moves, shieldCount,gridSize);
                         }
                         else
                         {
@@ -250,7 +307,7 @@ public class DungeonGame
                             traps[currentRow][currentCol + 1] = '-';
                             traps[currentRow][currentCol] = '@';
                             moves++;
-                            printGrid(traps, moves,shieldCount);
+                            printGrid(traps, moves,shieldCount,gridSize);
                             break;
                         }
                         
@@ -266,7 +323,7 @@ public class DungeonGame
                         tiles[currentRow][currentCol] = '@';
                         traps[currentRow][currentCol + 1] = '-';
                         tiles[currentRow][currentCol + 1] = '.';
-                        printGrid(tiles, moves, shieldCount);
+                        printGrid(tiles, moves, shieldCount,gridSize);
                     }
 
                     else
@@ -290,13 +347,13 @@ public class DungeonGame
                     System.out.println("");
                 }
 
-                printGrid(tiles, moves,shieldCount);
+                printGrid(tiles, moves,shieldCount,gridSize);
             }
 
             //if user enters an s
             else if(move.toLowerCase().equals("s"))
             {
-                if(currentRow + 1 < 10)
+                if(currentRow + 1 < gridSize)
                 {
                     currentRow++;
 
@@ -306,7 +363,7 @@ public class DungeonGame
                         System.out.println("You carefully missed traps " + nearTraps + " times!");
                         System.out.println("");
                         moves++;
-                        printGrid(traps, moves,shieldCount);
+                        printGrid(traps, moves,shieldCount,gridSize);
                         break;
                     }
 
@@ -321,7 +378,7 @@ public class DungeonGame
                             tiles[currentRow][currentCol] = '@';
                             traps[currentRow - 1][currentCol] = '-';
                             tiles[currentRow - 1][currentCol] = '.';
-                            printGrid(tiles, moves, shieldCount);
+                            printGrid(tiles, moves, shieldCount,gridSize);
                         }
                         else
                         {
@@ -330,7 +387,7 @@ public class DungeonGame
                             traps[currentRow - 1][currentCol] = '-';
                             traps[currentRow][currentCol] = '@';
                             moves++;
-                            printGrid(traps, moves, shieldCount);
+                            printGrid(traps, moves, shieldCount,gridSize);
                             break;
                         }
                         
@@ -346,7 +403,7 @@ public class DungeonGame
                         tiles[currentRow][currentCol] = '@';
                         traps[currentRow - 1][currentCol] = '-';
                         tiles[currentRow - 1][currentCol] = '.';
-                        printGrid(tiles, moves, shieldCount);
+                        printGrid(tiles, moves, shieldCount,gridSize);
                     }
 
                     else
@@ -370,13 +427,13 @@ public class DungeonGame
                     System.out.println("");
                 }
 
-                printGrid(tiles, moves,shieldCount);
+                printGrid(tiles, moves,shieldCount,gridSize);
             }
 
             // if user enters a d
             else if(move.toLowerCase().equals("d"))
             {
-                if(currentCol + 1 < 10)
+                if(currentCol + 1 < gridSize)
                 {
                     currentCol++;
 
@@ -386,7 +443,7 @@ public class DungeonGame
                         System.out.println("You carefully missed " + nearTraps + " traps!");
                         System.out.println("");
                         moves++;
-                        printGrid(traps, moves, shieldCount);
+                        printGrid(traps, moves, shieldCount,gridSize);
                         break;
                     }
 
@@ -401,7 +458,7 @@ public class DungeonGame
                             tiles[currentRow][currentCol] = '@';
                             traps[currentRow][currentCol - 1] = '-';
                             tiles[currentRow][currentCol - 1] = '.';
-                            printGrid(tiles, moves, shieldCount);
+                            printGrid(tiles, moves, shieldCount,gridSize);
                         }
                         else
                         {
@@ -410,7 +467,7 @@ public class DungeonGame
                             traps[currentRow][currentCol - 1] = '-';
                             traps[currentRow][currentCol] = '@';
                             moves++;
-                            printGrid(traps, moves,shieldCount);
+                            printGrid(traps, moves,shieldCount,gridSize);
                             moves++;
                             break; 
                         }
@@ -426,7 +483,7 @@ public class DungeonGame
                         tiles[currentRow][currentCol] = '@';
                         traps[currentRow][currentCol - 1] = '-';
                         tiles[currentRow][currentCol - 1] = '.';
-                        printGrid(tiles, moves, shieldCount);
+                        printGrid(tiles, moves, shieldCount,gridSize);
                     }
 
                     else //update user position
@@ -452,7 +509,7 @@ public class DungeonGame
                 }
 
                 //print the grid
-                printGrid(tiles, moves, shieldCount);
+                printGrid(tiles, moves, shieldCount, gridSize);
             }
             else //handle if user enters an invalid option
             {
@@ -483,21 +540,42 @@ public class DungeonGame
         
     }
 
-    public static void printGrid(char tiles[][],int moves, int shieldCount)
+    public static void printGrid(char tiles[][],int moves, int shieldCount, int gridSize)
     {
+
         System.out.println("");
-        System.out.println("    1 2 3 4 5 6 7 8 9 10");
-        System.out.println("   ---------------------");
+        System.out.print("    ");
+
+        for(int i = 0; i < gridSize; i++)
+        {
+            if(i < 9)
+            {
+                System.out.printf("%1d|", (i + 1));
+            }
+            else
+            {
+                System.out.printf("%2d|", (i + 1));
+            }
+        }
+        System.out.println();
+        System.out.print("   ");
+
+        for(int i = 0; i < gridSize; i++)
+        {
+            System.out.print("--");
+        }
+
+        System.out.println("");
 
         for(int i = 0; i < tiles.length; i++)
         {
             if(i < 9)
             {
-                System.out.print((i + 1) + " | ");
+                System.out.printf("%2d | ", (i + 1));
             }
             else
             {
-                System.out.print((i + 1) + "| ");
+                System.out.printf("%2d | ", (i + 1));
             }
 
             for(int j = 0; j < tiles.length; j++)
