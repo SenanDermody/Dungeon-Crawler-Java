@@ -1,3 +1,4 @@
+//import classes
 import java.util.Random;
 import java.util.Scanner;
 
@@ -5,6 +6,7 @@ public class DungeonGame
 {
     public static void main(String[] args)
     {
+        //declare scanner and random
         Scanner scanner = new Scanner(System.in);
         Random r = new Random();
 
@@ -13,21 +15,25 @@ public class DungeonGame
         System.out.println("The objective is to make it to the end (E) of the dungeon without walking into a trap (X)");
         System.out.println("You may find powerups that will help you thoughout your journey (P)");
         System.out.println("Sometimes when you walk past a trap, it may make a noise...");
+
+        //messages for choosing a grid size
         System.out.println("To start, choose a size for your grid: ");
         System.out.println("Min area = 5 & max area = 15");
 
+        
+        //get input for gridsize
         int gridSize = scanner.nextInt();
         scanner.nextLine();
 
-        //set variables
-        while (gridSize < 6 && gridSize > 16)
+        //check if grid size is within parameters
+        while(true)
         {
-            if(gridSize < 6)
+            if(gridSize < 5)
             {
                 System.out.println("Choose a bigger area");
                 gridSize = scanner.nextInt();
             }
-            if(gridSize > 16)
+            else if(gridSize > 15)
             {
                 System.out.println("Choose a smaller area");
                 gridSize = scanner.nextInt();
@@ -45,6 +51,7 @@ public class DungeonGame
         int moves = 0;
         int shieldCount = 0;
 
+        //messages for choosing difficulty
         System.out.println("Now choose a diffuclty to play: ");
         System.out.println("Hard     (30% traps) (5% shields)");
         System.out.println("Medium   (15% traps) (3% shields)");
@@ -52,68 +59,22 @@ public class DungeonGame
         System.out.println("Peaceful (1% traps)  (No shields)");
         System.out.println("");
 
+        //declare difficulty string
         String difficulty = scanner.nextLine();
 
-        if(difficulty.toLowerCase().equals("hard"))
-            {
-                difficult = (gridSize * gridSize) * 0.3;
-                powerUps = (gridSize * gridSize) * 0.05;
-            }
-            else if(difficulty.toLowerCase().equals("medium"))
-            {
-                difficult = (gridSize * gridSize) * 0.15;
-                powerUps = (gridSize * gridSize) * 0.03;
-            }
-            else if(difficulty.toLowerCase().equals("easy"))
-            {
-                difficult = (gridSize * gridSize) * 0.05;
-                powerUps = (gridSize * gridSize) * 0.01;
-            }
-            else if(difficulty.toLowerCase().equals("peaceful"))
-            {
-                difficult = 0;
-            }
-            else
-            {
-                System.out.println("Not a valid option, try again");
-                difficulty = scanner.nextLine();
-
-            }
+        difficult = difficultySetter(difficulty, gridSize);
+        powerUps = powerUpsSetter(difficulty, gridSize);
 
         //set difficulty level
-        while(!difficulty.equals("hard") && !difficulty.equals("medium") && !difficulty.equals("easy") && !difficulty.equals("peaceful"))
+        while(difficultySetter(difficulty, gridSize) == 0)
         {
-            //sets difficult level based on input
-            if(difficulty.toLowerCase().equals("hard"))
-            {
-                difficult = (gridSize * gridSize) * 0.3;
-                powerUps = (gridSize * gridSize) * 0.05;
-            }
-            else if(difficulty.toLowerCase().equals("medium"))
-            {
-                difficult = (gridSize * gridSize) * 0.15;
-                powerUps = (gridSize * gridSize) * 0.03;
-            }
-            else if(difficulty.toLowerCase().equals("easy"))
-            {
-                difficult = (gridSize * gridSize) * 0.05;
-                powerUps = (gridSize * gridSize) * 0.01;
-            }
-            else if(difficulty.toLowerCase().equals("peaceful"))
-            {
-                difficult = 0;
-            }
-            else
-            {
-                System.out.println("Not a valid option, try again");
-                difficulty = scanner.nextLine();
+            System.out.println("Not a valid option!?!");
+            difficulty = scanner.nextLine();
 
-            }
+            difficult = difficultySetter(difficulty, gridSize);
+            powerUps = powerUpsSetter(difficulty, gridSize);
         }
 
-        System.out.println(difficult);
-        System.out.println(powerUps);
-        
         
         //creating grid array and fill it
         char[][] tiles = new char[gridSize][gridSize];
@@ -127,7 +88,7 @@ public class DungeonGame
 
         }
 
-        //creating trap array and filling it
+        //creating trap array and fill it
         char[][] traps = new char[gridSize][gridSize];
 
         for(int i = 0; i < traps.length; i++)
@@ -142,7 +103,7 @@ public class DungeonGame
         int trapCount = 0;
         int nearTraps = 0;
 
-        //fill grid with number of traps
+        //fill grid with random number of traps based on difficulty
         while(trapCount < difficult)
         {
             int randomRow = r.nextInt(gridSize);
@@ -155,7 +116,7 @@ public class DungeonGame
             }
         }
 
-        //fill grid with powerups
+        //fill grid with random number of powerups based on difficulty
         while(powerUpCount < powerUps)
         {
             int randomRow2 = r.nextInt(gridSize);
@@ -179,14 +140,16 @@ public class DungeonGame
         tiles[randomEndRow][randomEndCol] = 'E';
         traps[randomEndRow][randomEndCol] = 'E';
 
+        //print out frist grid
         printGrid(tiles, moves,shieldCount, gridSize);
 
+        //messages for starting postion and movement
         System.out.println("");
         System.out.println("You have started at position (0,0)");
         System.out.println("To move use WASD");
         System.out.println("");
 
-        //update user position and check for traps / ending
+        //update user position and check for ending, traps and nearby traps,powerups and hitting walls
         while(tiles[currentRow][currentCol] != 'E')
         {
             String move = scanner.nextLine();
@@ -194,11 +157,11 @@ public class DungeonGame
             //if user enters a W
             if(move.toLowerCase().equals("w"))
             {
-                if(currentRow - 1 >= 0)
+                if(currentRow - 1 >= 0) // check if beside a wall
                 {
                     currentRow--;
 
-                    if(endCheck(tiles, currentRow, currentCol) == true)
+                    if(endCheck(tiles, currentRow, currentCol) == true) //check if at the end
                     {
                         System.out.println("You made it to the end!");
                         System.out.println("You carefully missed traps " + nearTraps + " times!");
@@ -208,9 +171,9 @@ public class DungeonGame
                         break;
                     }
 
-                    else if(trapCheck(traps, currentRow, currentCol) == true)
+                    else if(trapCheck(traps, currentRow, currentCol) == true) // check if on a trap
                     {
-                        if(shieldCount > 0)
+                        if(shieldCount > 0) //check for shields
                         {
                             shieldCount--;
                             System.out.println("Your shield absorbed a trap hit for you, that was a close one!");
@@ -221,7 +184,7 @@ public class DungeonGame
                             moves++;
                             printGrid(tiles, moves, shieldCount,gridSize);
                         }
-                        else
+                        else // ends game if no shields
                         {
                             System.out.println("You hit a trap, game over!");
                             System.out.println("");
@@ -233,7 +196,7 @@ public class DungeonGame
                         }
                     }
 
-                    else if(powerUpCheck(traps, currentRow, currentCol) == true)
+                    else if(powerUpCheck(traps, currentRow, currentCol) == true) // check if on a powerup
                     {
                         System.out.println("You found a power up!");
                         System.out.println("You can now absorb a trap hit");
@@ -246,7 +209,7 @@ public class DungeonGame
                         printGrid(tiles, moves, shieldCount,gridSize);
                     }
    
-                    else
+                    else // check if nearby a trap
                     {
                         if(nearbyCheck(traps, currentRow, currentCol) == true)
                         {
@@ -261,13 +224,13 @@ public class DungeonGame
                         moves++;
                     }
                 }
-                else
+                else // print statement if user tries to move into a wall
                 {
                     System.out.println("You hit a wall!");
                     System.out.println("");
                 }
 
-                printGrid(tiles, moves,shieldCount,gridSize);
+                printGrid(tiles, moves, shieldCount, gridSize);
             }
 
             //if user enters an a
@@ -440,7 +403,7 @@ public class DungeonGame
                     if(endCheck(tiles, currentRow, currentCol) == true) //check if at the ending
                     {
                         System.out.println("You made it to the end!");
-                        System.out.println("You carefully missed " + nearTraps + " traps!");
+                        System.out.println("You carefully missed traps " + nearTraps + " times!");
                         System.out.println("");
                         moves++;
                         printGrid(traps, moves, shieldCount,gridSize);
@@ -598,5 +561,49 @@ public class DungeonGame
         if(c < traps.length - 1 && traps[r][c + 1] == 'X') return true;
 
         return false;
+    }
+
+    public static double difficultySetter(String difficulty, int gridSize)
+    {
+        if(difficulty.toLowerCase().equals("peaceful"))
+        {
+            return (gridSize * gridSize) * 0.01;
+        }
+        else if(difficulty.toLowerCase().equals("easy"))
+        {
+            return (gridSize * gridSize) * 0.05;
+        }
+        else if(difficulty.toLowerCase().equals("medium"))
+        {
+            return (gridSize * gridSize) * 0.15;
+        }
+        else if(difficulty.toLowerCase().equals("hard"))
+        {
+            return (gridSize * gridSize) * 0.3;
+        }
+
+        return 0;
+    }
+
+    public static double powerUpsSetter(String difficulty, int gridSize)
+    {
+        if(difficulty.toLowerCase().equals("peaceful"))
+        {
+            return 0;
+        }
+        else if(difficulty.toLowerCase().equals("easy"))
+        {
+            return (gridSize * gridSize) * 0.01;
+        }
+        else if(difficulty.toLowerCase().equals("medium"))
+        {
+            return (gridSize * gridSize) * 0.03;
+        }
+        else if(difficulty.toLowerCase().equals("hard"))
+        {
+            return (gridSize * gridSize) * 0.05;
+        }
+
+        return 0;
     }
 }
